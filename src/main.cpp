@@ -87,7 +87,7 @@ void generate_keys_menu() {
 void encrypt_menu() {
     std::cin.ignore();
     std::string msg;
-    std::cout << "Wprowadź wiadomosc do zaszyfrowania:\n> ";
+    std::cout << "Wprowadz wiadomosc do zaszyfrowania:\n> ";
     std::getline(std::cin, msg);
 
     std::cout << "Wczytywanie klucza publicznego z public.key...\n";
@@ -110,7 +110,7 @@ void decrypt_menu() {
 
     std::string decrypted = rsa.decrypt_string(blocks, priv);
 
-    std::cout << "Odszyfrowana wiadomość:\n" << decrypted << "\n";
+    std::cout << "Odszyfrowana wiadomosc:\n" << decrypted << "\n";
 }
 
 int main() {
