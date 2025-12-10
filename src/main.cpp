@@ -1,72 +1,61 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "rsa/rsa.h"// Dołączenie pliku nagłówkowego z klasą RSA
+#include <gmpxx.h>
+#include "rsa/rsa.h"
 
-using namespace rsa_project;
+using rsa::RSA;
+using rsa::PubKey;
+using rsa::PrivKey;
 
-// =====================
-//  FUNKCJA: GENEROWANIE KLUCZY
-// =====================
 void generate_keys_menu() {
-
-    RSA rsa; // Obiekt RSA do obsługi kluczy i szyfrowania
+    RSA rsa;
 
     unsigned int bits;
     std::cout << "Enter key size in bits (recommended 512 or 1024): ";
     std::cin >> bits;
 
-    // Generujemy klucze publiczny i prywatny
     rsa.generate_keys(bits, 5);
 
     auto pub = rsa.get_public_key();
     auto priv = rsa.get_private_key();
 
-    // Wyświetlamy klucz publiczny
     std::cout << "\nPublic Key (e, n):\n";
     std::cout << "e = " << pub.e << "\n";
     std::cout << "n = " << pub.n << "\n";
 
-    // Wyświetlamy klucz prywatny
     std::cout << "\nPrivate Key (d, n):\n";
     std::cout << "d = " << priv.d << "\n";
     std::cout << "n = " << priv.n << "\n";
 
-    // Zapisujemy klucze do plików
     std::ofstream("public.key") << pub.e << " " << pub.n;
     std::ofstream("private.key") << priv.d << " " << priv.n;
 
     std::cout << "\nKeys saved to:\n  public.key\n  private.key\n\n";
 }
 
-// =====================
-//  FUNKCJA: SZYFROWANIE TEKSTU
-// =====================
 void encrypt_menu() {
 
-    RSA rsa; // Obiekt RSA
+    RSA rsa;
 
-    std::cin.ignore(); // Czyszczenie bufora wejścia
+    std::cin.ignore();
     std::string message;
 
     std::cout << "Enter text to encrypt: ";
     std::getline(std::cin, message);
 
-    // Wczytujemy klucz publiczny z pliku
-    PublicKey pub;
+    PubKey pub;
     std::ifstream pub_file("public.key");
 
     if (!pub_file) {
         std::cout << "ERROR: public.key not found! Generate keys first.\n";
-        return; // Bez klucza publicznego nie zaszyfrujemy
+        return;
     }
 
     pub_file >> pub.e >> pub.n;
 
-    // Szyfrowanie tekstu → wektor dużych liczb (cpp_int)
     auto encrypted = rsa.encrypt_string(message, pub);
 
-    // Zapis zaszyfrowanych liczb do pliku
     std::ofstream out("encrypted.txt");
     for (auto &num : encrypted)
         out << num << "\n";
@@ -74,17 +63,13 @@ void encrypt_menu() {
     std::cout << "\nEncrypted text saved to encrypted.txt\n\n";
 }
 
-// =====================
-//  FUNKCJA: DESZYFROWANIE TEKSTU
-// =====================
 void decrypt_menu() {
 
-    RSA rsa; // Obiekt RSA
+    RSA rsa;
 
-    PrivateKey priv;
+    PrivKey priv;
     std::ifstream priv_file("private.key");
 
-    // Wczytujemy klucz prywatny z pliku
     if (!priv_file) {
         std::cout << "ERROR: private.key not found!\n";
         return;
@@ -92,29 +77,23 @@ void decrypt_menu() {
 
     priv_file >> priv.d >> priv.n;
 
-    // Wczytujemy zaszyfrowane liczby
     std::ifstream in("encrypted.txt");
     if (!in) {
         std::cout << "ERROR: encrypted.txt not found!\n";
         return;
     }
 
-    std::vector<cpp_int> encrypted;
-    cpp_int value;
+    std::vector<big_int> encrypted;
+    big_int value;
 
-    // Każda linia zawiera jedną dużą liczbę → wczytujemy wszystkie
     while (in >> value)
         encrypted.push_back(value);
 
-    // Odszyfrowujemy listę liczb → tekst
     std::string decrypted = rsa.decrypt_string(encrypted, priv);
 
     std::cout << "\nDecrypted message:\n" << decrypted << "\n\n";
 }
 
-// =====================
-//         GŁÓWNE MENU
-// =====================
 int main() {
     int choice;
 

@@ -1,68 +1,59 @@
-// Nagłówek RSA
 #ifndef RSA_H
 #define RSA_H
 
-#include <boost/multiprecision/cpp_int.hpp>
+#include <gmpxx.h>
 #include <string>
 #include <vector>
 
-using boost::multiprecision::cpp_int;
+/* mpz_class to odpowiednik z libgmp boostowego cpp_int
+ * nazwa jest nieintuicyjna wiec uzywamy `big_int` */
+using big_int = mpz_class;
 
-namespace rsa_project {
+namespace rsa {
 
-// Struktura klucza publicznego
-struct PublicKey {
-    cpp_int n; // Moduł
-    cpp_int e; // Wykładnik publiczny
-};
+    struct PubKey {
+        big_int n; // Modul
+        big_int e; // Wykladnik publiczny
+    };
 
-// Struktura klucza prywatnego
-struct PrivateKey {
-    cpp_int n; // Moduł
-    cpp_int d; // Wykładnik prywatny
-};
+    struct PrivKey {
+        big_int n; // ^
+        big_int d; // Wykladnik prywatny
+    };
 
-// Klasa RSA
-class RSA {
-public:
-    RSA();
-    // Generowanie pary kluczy o podanej długości bitowej (np. 1024)
-    void generate_keys(unsigned int bits, unsigned int mr_rounds = 25);
+    class RSA {
+    public:
+        RSA();
 
-    PublicKey get_public_key() const;   // Pobranie klucza publicznego
-    PrivateKey get_private_key() const; // Pobranie klucza prywatnego
+        void generate_keys(unsigned int bits, unsigned int mr_rounds = 25);
 
-    // Szyfrowanie/deszyfrowanie pojedynczego bloku liczbowego
-    cpp_int encrypt_block(const cpp_int& m, const PublicKey& pub) const;
-    cpp_int decrypt_block(const cpp_int& c, const PrivateKey& priv) const;
+        PubKey  get_public_key() const { return pub_; };   
+        PrivKey get_private_key() const { return priv_; };
 
-    // Szyfrowanie/deszyfrowanie ciągów znaków
-    // (wiadomość dzielona na bloki < n)
-    std::vector<cpp_int> encrypt_string(const std::string& message, const PublicKey& pub) const;
-    std::string decrypt_string(const std::vector<cpp_int>& cipher_blocks, const PrivateKey& priv) const;
+        big_int encrypt_block(const big_int& m, const PubKey& pub) const;
+        big_int decrypt_block(const big_int& c, const PrivKey& priv) const;
 
-    // Narzędzie: test pierwszości
-    bool is_probable_prime(const cpp_int& n, unsigned int rounds = 25) const;
+        std::vector<big_int> encrypt_string(const std::string& message, const PubKey& pub) const;
+        std::string decrypt_string(const std::vector<big_int>& cipher_blocks, const PrivKey& priv) const;
 
-private:
-    PublicKey pub_;   // Klucz publiczny
-    PrivateKey priv_; // Klucz prywatny
+        bool is_probable_prime(const big_int& n, unsigned int rounds = 25) const;
 
-    // Funkcje matematyczne
-    static cpp_int gcd(cpp_int a, cpp_int b); // NWD
-    static void extended_gcd(const cpp_int& a, const cpp_int& b, cpp_int& g, cpp_int& x, cpp_int& y); // Rozszerzony algorytm Euklidesa
-    static cpp_int modinv(const cpp_int& a, const cpp_int& m); // Odwrotność modularna
-    static cpp_int modexp(cpp_int base, cpp_int exp, const cpp_int& mod); // Potęgowanie modularne
+    private:
+        PubKey pub_;   
+        PrivKey priv_;
 
-    // Liczby losowe i liczby pierwsze
-    cpp_int random_k_bit(unsigned int k) const; // Losowa liczba k-bitowa
-    cpp_int random_between(const cpp_int& low, const cpp_int& high) const; // Losowa liczba w zakresie [low, high]
-    cpp_int generate_prime(unsigned int bits, unsigned int mr_rounds = 25) const; // Generowanie liczby pierwszej
+        static big_int gcd(big_int a, big_int b);
+        static void extended_gcd(const big_int& a, const big_int& b, big_int& g, big_int& x, big_int& y);
+        static big_int modinv(const big_int& a, const big_int& m);
+        static big_int modexp(big_int base, big_int exp, const big_int& mod);
 
-    unsigned int rng_seed_entropy() const; // Ziarno generatora losowego
-    unsigned int mr_rounds_default_;       // Domyślna liczba rund Miller-Rabina
-};
+        big_int random_k_bit(unsigned int k) const;
+        big_int random_between(const big_int& low, const big_int& high) const;
+        big_int generate_prime(unsigned int bits, unsigned int mr_rounds = 25) const;
 
-} // namespace rsa_project
+        unsigned int rng_seed_entropy() const;
+        unsigned int mr_rounds_default_;      
+    };
+}
 
-#endif // RSA_H
+#endif
