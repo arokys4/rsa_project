@@ -1,4 +1,4 @@
-// RSA implementation// RSA implementation
+// Implementacja RSA
 #include "rsa.h"
 #include <random>
 #include <chrono>
@@ -8,7 +8,7 @@
 using namespace rsa_project;
 
 //
-// Implementation
+// Implementacja
 //
 
 RSA::RSA() : mr_rounds_default_(25) {}
@@ -19,7 +19,7 @@ void RSA::generate_keys(unsigned int bits, unsigned int mr_rounds) {
     }
     mr_rounds = (mr_rounds == 0) ? mr_rounds_default_ : mr_rounds;
 
-    // Generate two distinct primes p and q of roughly bits/2 each
+    // Generowanie dwóch różnych liczb pierwszych p i q o długości około bits/2 każda
     unsigned int half = bits / 2;
     cpp_int p = generate_prime(half, mr_rounds);
     cpp_int q;
@@ -30,10 +30,10 @@ void RSA::generate_keys(unsigned int bits, unsigned int mr_rounds) {
     cpp_int n = p * q;
     cpp_int phi = (p - 1) * (q - 1);
 
-    // Public exponent e (commonly 65537)
+    // Publiczny wykładnik e (często 65537)
     cpp_int e = 65537;
     if (gcd(e, phi) != 1) {
-        // fallback: find small odd e co-prime with phi
+        // Alternatywa: znajdź małe nieparzyste e względnie pierwsze z phi
         e = 3;
         while (e < phi && gcd(e, phi) != 1) e += 2;
         if (e >= phi) throw std::runtime_error("Failed to find public exponent e.");
@@ -55,11 +55,12 @@ PrivateKey RSA::get_private_key() const {
     return priv_;
 }
 
-// ---------- Basic arithmetic helpers ----------
+// ---------- Podstawowe funkcje arytmetyczne ----------
 
 cpp_int RSA::gcd(cpp_int a, cpp_int b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
+    // Algorytm Euklidesa dla NWD
     while (b != 0) {
         cpp_int r = a % b;
         a = b;
@@ -69,7 +70,7 @@ cpp_int RSA::gcd(cpp_int a, cpp_int b) {
 }
 
 void RSA::extended_gcd(const cpp_int& a_, const cpp_int& b_, cpp_int& g, cpp_int& x, cpp_int& y) {
-    // iterative extended gcd
+    // Iteracyjny rozszerzony algorytm Euklidesa
     cpp_int a = a_, b = b_;
     cpp_int x0 = 1, y0 = 0;
     cpp_int x1 = 0, y1 = 1;
@@ -89,6 +90,7 @@ void RSA::extended_gcd(const cpp_int& a_, const cpp_int& b_, cpp_int& g, cpp_int
 }
 
 cpp_int RSA::modinv(const cpp_int& a, const cpp_int& m) {
+    // Obliczanie odwrotności modularnej a mod m
     cpp_int g, x, y;
     extended_gcd(a, m, g, x, y);
     if (g != 1) {
@@ -100,6 +102,7 @@ cpp_int RSA::modinv(const cpp_int& a, const cpp_int& m) {
 }
 
 cpp_int RSA::modexp(cpp_int base, cpp_int exp, const cpp_int& mod) {
+    // Szybkie potęgowanie modularne
     if (mod == 1) return 0;
     cpp_int result = 1;
     base %= mod;
@@ -111,10 +114,10 @@ cpp_int RSA::modexp(cpp_int base, cpp_int exp, const cpp_int& mod) {
     return result;
 }
 
-// ---------- Random generation helpers ----------
+// ---------- Generowanie liczb losowych ----------
 
 unsigned int RSA::rng_seed_entropy() const {
-    // use chrono + random_device to get seed
+    // Użycie chrono + random_device do uzyskania ziarna
     std::random_device rd;
     unsigned int seed = static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count() ^ rd());
     return seed;
@@ -122,7 +125,7 @@ unsigned int RSA::rng_seed_entropy() const {
 
 cpp_int RSA::random_k_bit(unsigned int k) const {
     if (k == 0) return 0;
-    // Build random number by concatenating 64-bit chunks
+    // Budowanie losowej liczby przez łączenie 64-bitowych fragmentów
     std::mt19937_64 gen(rng_seed_entropy());
     std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
 
@@ -137,7 +140,7 @@ cpp_int RSA::random_k_bit(unsigned int k) const {
     }
     if (rem_bits) {
         uint64_t part = dist(gen);
-        // mask to rem_bits
+        // Maska dla pozostałych bitów
         if (rem_bits < 64) {
             uint64_t mask = (rem_bits == 64) ? ~uint64_t(0) : ((uint64_t(1) << rem_bits) - 1);
             part &= mask;
@@ -145,18 +148,18 @@ cpp_int RSA::random_k_bit(unsigned int k) const {
         r <<= rem_bits;
         r += part;
     }
-    // ensure highest bit set to get k-bit number
+    // Ustawienie najwyższego bitu, aby uzyskać k-bitową liczbę
     r |= (cpp_int(1) << (k - 1));
-    // ensure odd
+    // Ustawienie nieparzystości
     r |= 1;
     return r;
 }
 
-// random in [low, high] inclusive (assumes low <= high)
+// Losowa liczba w zakresie [low, high] włącznie (zakłada low <= high)
 cpp_int RSA::random_between(const cpp_int& low, const cpp_int& high) const {
     if (low > high) throw std::runtime_error("random_between: low > high");
     cpp_int range = high - low + 1;
-    // determine bit length of range
+    // Określenie liczby bitów potrzebnej do zakresu
     unsigned int bits = 0;
     cpp_int tmp = range - 1;
     while (tmp > 0) { tmp >>= 1; ++bits; }
@@ -167,7 +170,7 @@ cpp_int RSA::random_between(const cpp_int& low, const cpp_int& high) const {
     return low + candidate;
 }
 
-// ---------- Miller-Rabin primality test ----------
+// ---------- Test pierwszości Millera-Rabina ----------
 
 bool RSA::is_probable_prime(const cpp_int& n, unsigned int rounds) const {
     if (n < 2) return false;
@@ -177,7 +180,7 @@ bool RSA::is_probable_prime(const cpp_int& n, unsigned int rounds) const {
         if (n % p == 0) return false;
     }
 
-    // write n-1 as d * 2^s
+    // Zapis n-1 jako d * 2^s
     cpp_int d = n - 1;
     unsigned int s = 0;
     while ((d & 1) == 0) {
@@ -189,14 +192,13 @@ bool RSA::is_probable_prime(const cpp_int& n, unsigned int rounds) const {
     std::uniform_int_distribution<uint64_t> dist64(2, std::numeric_limits<uint64_t>::max());
 
     for (unsigned int i = 0; i < rounds; ++i) {
-        // pick random a in [2, n-2]
+        // Wybór losowego a w [2, n-2]
         cpp_int a;
-        // if n fits in 64-bit, we can choose a small random 64-bit and mod it
         if (n.convert_to<long long>() > 0 && n < cpp_int(std::numeric_limits<uint64_t>::max())) {
             uint64_t aval = 2 + (dist64(gen) % (n.convert_to<uint64_t>() - 3));
             a = aval;
         } else {
-            // general case: pick random between 2 and n-2
+            // Ogólny przypadek: losowa liczba w [2, n-2]
             a = random_between(2, n - 2);
         }
 
@@ -213,20 +215,20 @@ bool RSA::is_probable_prime(const cpp_int& n, unsigned int rounds) const {
         }
         if (composite) return false;
     }
-    return true; // probably prime
+    return true; // prawdopodobnie liczba pierwsza
 }
 
 cpp_int RSA::generate_prime(unsigned int bits, unsigned int mr_rounds) const {
     if (bits < 2) throw std::runtime_error("generate_prime: bits must be >= 2");
     while (true) {
         cpp_int cand = random_k_bit(bits);
-        // Ensure cand odd and has highest bit set (random_k_bit does this)
+        // Zapewnienie nieparzystości i ustawienie najwyższego bitu (random_k_bit robi to)
         if (is_probable_prime(cand, mr_rounds)) return cand;
-        // else retry
+        // W przeciwnym razie spróbuj ponownie
     }
 }
 
-// ---------- RSA encrypt / decrypt ----------
+// ---------- Szyfrowanie / deszyfrowanie RSA ----------
 
 cpp_int RSA::encrypt_block(const cpp_int& m, const PublicKey& pub) const {
     if (m < 0 || m >= pub.n) {
@@ -242,12 +244,12 @@ cpp_int RSA::decrypt_block(const cpp_int& c, const PrivateKey& priv) const {
     return modexp(c, priv.d, priv.n);
 }
 
-// Convert bytes (string) to big integer blocks < n, and back
+// Konwersja bajtów (string) na bloki big int < n i odwrotnie
 std::vector<cpp_int> RSA::encrypt_string(const std::string& message, const PublicKey& pub) const {
     std::vector<cpp_int> blocks;
     if (pub.n == 0) throw std::runtime_error("Public key not set (n==0).");
 
-    // determine max bytes per block: find highest number of bytes such that (256^bytes) <= n
+    // Określenie maksymalnej liczby bajtów na blok: znajdź najwyższą liczbę bajtów tak, aby (256^bytes) <= n
     unsigned int max_bytes = 1;
     cpp_int limit = 256; // 256^1
     while (limit <= pub.n) {
@@ -255,10 +257,9 @@ std::vector<cpp_int> RSA::encrypt_string(const std::string& message, const Publi
         limit *= 256;
     }
     if (max_bytes == 0) max_bytes = 1;
-    // after loop limit > n, so reduce by 1
     max_bytes = std::max<unsigned int>(1, max_bytes - 1);
 
-    // pack bytes into blocks
+    // Pakowanie bajtów w bloki
     size_t i = 0;
     while (i < message.size()) {
         unsigned int take = std::min<size_t>(max_bytes, message.size() - i);
@@ -268,9 +269,8 @@ std::vector<cpp_int> RSA::encrypt_string(const std::string& message, const Publi
             m <<= 8;
             m += byte;
         }
-        // If m >= n (shouldn't happen due to max_bytes calculation), fallback to smaller block
         if (m >= pub.n) {
-            // decrease block size until m < n
+            // zmniejszenie rozmiaru bloku aż m < n
             bool adjusted = false;
             for (int dec = take - 1; dec >= 1; --dec) {
                 cpp_int mm = 0;
@@ -299,7 +299,7 @@ std::string RSA::decrypt_string(const std::vector<cpp_int>& cipher_blocks, const
     std::string out;
     for (const cpp_int& c : cipher_blocks) {
         cpp_int m = decrypt_block(c, priv);
-        // convert m back to bytes: find how many bytes by shifting
+        // Konwersja m na bajty: określenie liczby bajtów przez przesunięcia
         std::vector<unsigned char> bytes;
         cpp_int temp = m;
         while (temp > 0) {
@@ -308,13 +308,12 @@ std::string RSA::decrypt_string(const std::vector<cpp_int>& cipher_blocks, const
             temp >>= 8;
         }
         if (bytes.empty()) {
-            // plaintext block was zero
+            // blok plaintext był zerem
             out.push_back('\0');
         } else {
-            // bytes are little-endian from above, reverse
+            // bajty są w odwrotnej kolejności, odwróć
             for (auto it = bytes.rbegin(); it != bytes.rend(); ++it) out.push_back(static_cast<char>(*it));
         }
     }
     return out;
 }
-
