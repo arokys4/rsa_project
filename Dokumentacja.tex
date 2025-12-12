@@ -1,0 +1,113 @@
+\documentclass[12pt,leqno]{article}  
+\usepackage{graphicx} 
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+
+\title{Applied Cryptography – RSA Encryption and Secure Communication}
+\author{Jakub Sikora, Mikołaj Czermak}
+\date{}% - pusta data | %\date{\today} - data dzisiejsza
+
+
+\begin{document}
+
+\maketitle 
+
+\section{Wprowadzenie}
+
+
+    \subsection{Cel projektu}
+
+    Celem projektu jest zaprojektowanie i zaimplementowanie kompletnego systemu bezpiecznej komunikacji opartego na kryptografii asymetrycznej RSA. System ma za zadanie umożliwiać generowanie kluczy kryptograficznych, szyfrowanie oraz deszyfrowanie wiadomości w celu efektywnego zabezpieczenia danych. Kluczowym elementem projektu jest stworzenie własnej implementacji algorytmów matematycznych stojących za kryptosystemem RSA, takich jak generowanie liczb pierwszych, obliczanie funkcji Eulera, wyznaczanie odwrotności modularnej oraz szybkie potęgowanie modularne. 
+
+
+    \subsection{RSA (Rivest–Shamir–Adleman)}
+    
+        RSA to kryptosystem asymetryczny, który służy do bezpiecznego szyfrowania danych oraz tworzenia podpisów cyfrowych. Składa się z dwóch kluczy: publicznego i prywatnego.
+
+    \begin{itemize}
+        \item \textbf{Klucz publiczny} – służy do szyfrowania wiadomości oraz do weryfikowania podpisów cyfrowych. Może być udostępniany każdemu.
+        \item \textbf{Klucz prywatny} – służy do odszyfrowywania wiadomości zaszyfrowanych kluczem publicznym oraz do podpisywania danych. Musi być utrzymywany w tajemnicy.
+    \end{itemize}
+
+    
+    Podstawą RSA są dwie duże liczby pierwsze, których iloczyn stanowi element klucza publicznego. Bezpieczeństwo RSA wynika z trudności faktoryzacji, czyli rozkładania dużych liczb na czynniki pierwsze.
+    
+    RSA umożliwia:
+    \begin{enumerate}
+        \item bezpieczne przesyłanie danych,
+        \item uwierzytelnianie dzięki podpisom cyfrowym,
+        \item przekazywanie kluczy w systemach hybrydowych.
+    \end{enumerate}
+
+
+\section{Podstawy matematyczne}
+
+
+    \subsection{Liczby pierwsze}
+        Liczba pierwsza jest to dowolna liczba naturalna z dokładnie dwoma dzielnikami: jedynką (1) i nią samą.
+        W algorytmie RSA wybiera się dwie duże liczby pierwsze p i q. Ich iloczyn:
+        \[
+        n=pq
+        \]
+        stanowi podstawę klucza publicznego. RSA wykorzystuje fakt, że mimo iż łatwo jest pomnożyć dwie liczby pierwsze to bardzo trudno jest je rozłożyć z powrotem na czynniki jest to tzw. problem faktoryzacji.
+
+    
+    \subsection{Funkcje jednokierunkowe}
+        Funkcja jednokierunkowa – funkcja, która jest łatwa do wyliczenia, ale trudna do odwrócenia. „Łatwa do wyliczenia” oznacza tu, że istnieje algorytm wielomianowy, który ją wylicza. „Trudna do odwrócenia” oznacza, że żaden wielomianowy algorytm probabilistyczny nie potrafi znaleźć elementu przeciwobrazu \(f(x)\) z prawdopodobieństwem większym niż zaniedbywalnie, jeśli x jest wybrane losowo. Trudność dotyczy zatem średniego przypadku, a nie pesymistycznego, jak w większości problemów w teorii złożoności obliczeniowej (np. w problemach NP-trudnych)
+
+
+    \subsection{Arytmetyka modularna}
+        Arytmetyka modularna (arytmetyka reszt) to system liczenia reszt z dzielenia, gdzie liczby "zwijają się" po osiągnięciu określonej wartości nazywanej modułem, często nieokreślanej terminem modulo (skracane mod), działając jak zegar, np. \(17 \equiv 5 \pmod{6}\). Podstawowo operacje (dodawanie, odejmowanie, mnożenie) wykonuje się w ten sposób, ze wynik również daje resztę modułu {n}. (np. \((a+b) \bmod\ n)\). Jest kluczowa w kryptografii i informatyce a zapis \(a \equiv b \pmod{n}\) oznacza, że a i b dają tę samą resztę z dzielenia przez n (lub ich różnica jest podzielna przez n). Arytmetyka modularna jest fundamentem systemu RSA, operując na resztach z dzielenia dużych liczb: klucz publiczne \((N,e)\) i prywatny \((d)\) sa powiązanie przez operacje modulo \(N)\)
+        \[
+        gdzie (N = pq)\
+        \]
+        oraz relację        
+        \[
+        ed \equiv 1 \ (mod(p-1)(q-1))
+        \]
+        co umożliwia szyfrowanie 
+        \[
+        (C = M^e \pmod N)
+        \]
+        i deszyfrowanie
+        \[
+        ((M = C^d \pmod N)
+        \]        
+        danych, wykorzystując kongruencje i własności liczb.
+
+    \subsection{Twierdzenie Eulera}
+
+        Twierdzenie Eulera to ogólna nazwa dla wielu ważnych twierdzeń matematycznych, stworzonych przez Leonharda Eulera, ale najczęściej kojarzy się z dwoma kluczowymi: wzorem dla wielościanów (\(W-K+S=2\)) oraz uogólnieniem małego twierdzenia Fermata w teorii liczb (dotyczącym potęg reszt modulo \(m\)).
+
+        
+        Małe twierdzenie Fermata:
+        jeśli \(p\) jest liczbą pierwsza, to dla dowolnej liczby całkowitej \(a\), liczba \(a^p-a\) jest podzielna przez \(p\).
+        \[
+        a^p -a \equiv 0 \pmod p
+        \]   
+
+        
+        Kluczowe twierdzenie do konstrukcji klucza prywatnego:
+        \[
+        a^{\varphi(n)} \equiv 1 \pmod{n}, \quad \text{gdzie } \varphi(n) = (p-1)(q-1)
+        \]  
+
+
+\subsection{Funkcja Eulera}
+
+
+\subsection{Odwracalność modularna (Odwrócenie modulo)}
+
+
+\subsection{Potęgowanie szybkie}
+
+
+\subsection{Trudność faktoryzacji}
+
+
+
+\end{document}
+
+ 
