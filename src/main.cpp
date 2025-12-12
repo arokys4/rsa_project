@@ -3,10 +3,13 @@
 #include <string>
 #include <gmpxx.h>
 #include "rsa/rsa.h"
+#include "cli.hpp"
 
 using rsa::RSA;
 using rsa::PubKey;
 using rsa::PrivKey;
+
+using cli::CLI;
 
 void generate_keys_menu() {
     RSA rsa;
@@ -94,38 +97,41 @@ void decrypt_menu() {
     std::cout << "\nDecrypted message:\n" << decrypted << "\n\n";
 }
 
-int main() {
-    int choice;
+int main(int argc, char* argv[]) {
+    CLI cli;
+    
+    auto result = cli.parser.parse({argc, argv});
+    if (!result) {
+        std::cerr << "Error: " << result.message() << "\n";
+        return 1;
+    }
 
-    while (true) {
-        std::cout << "===========================\n";
-        std::cout << "         RSA MENU          \n";
-        std::cout << "===========================\n";
-        std::cout << "1. Generate RSA keys\n";
-        std::cout << "2. Encrypt text\n";
-        std::cout << "3. Decrypt text\n";
-        std::cout << "4. Exit\n";
-        std::cout << "Choose an option: ";
+    if (cli.show_help || cli.selected_cmd == CLI::Command::NONE) {
+        std::cout << cli.parser << "\n";
+        return 0;
+    }
 
-        std::cin >> choice;
-
-        switch (choice) {
-            case 1:
-                generate_keys_menu();
+    try {
+        switch (cli.selected_cmd) {
+            case CLI::Command::GENKEYS:
+                std::cout << "you have chosen genkeys cmd: " << cli._genkeys_args.bits << cli._genkeys_args.out_priv << cli._genkeys_args.out_pub; 
+                //handle_genkeys(cli._genkeys_args);
                 break;
-            case 2:
-                encrypt_menu();
+            case CLI::Command::ENCRYPT:
+                //handle_encrypt(cli._encrypt_args);
                 break;
-            case 3:
-                decrypt_menu();
+            case CLI::Command::DECRYPT:
+                //handle_decrypt(cli._decrypt_args);
                 break;
-            case 4:
-                std::cout << "Exiting...\n";
-                return 0;
             default:
-                std::cout << "Invalid option!\n";
+                std::cout << cli.parser << "\n";
                 break;
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Runtime Error: " << e.what() << "\n";
+        return 1;
     }
+
+    return 0;
 }
     
