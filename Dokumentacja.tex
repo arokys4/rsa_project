@@ -95,17 +95,60 @@
         \]  
 
 
-\subsection{Funkcja Eulera}
+    \subsection{Funkcja Eulera}
+
+        Funkcja Eulera  \(\phi (n)\) w RSA jest kluczowa dla generowania par kluczy, zlicza liczby naturalne mniejsze od \(n\) i względnie z nią pierwsze. Oblicza się ją jako 
+        \[
+        \phi (n)=(p-1)(q-1)
+        \] 
+        ,a następnie używa się do znalezienia prywatnego wykładnika d, który jest odwrotnością publicznego wykładnika \(e\) \text{modulo} \(\phi (n)\) czyli 
+        \[
+        d\cdot e\equiv 1 \pmod \phi (n))
+        \]
+        ,co umożliwia deszyfrowanie wiadomości. Bez niej niemożliwe byłoby stworzenie pary kluczy i działanie algorytmu.
+    
+    
+    \subsection{Odwracalność modularna (Odwrócenie modulo)}
+
+        Odwracalność modularna (modualar inverse) w arytmetyce modulo oznacza istnienie liczby  \(x\) takiej, że dla danej liczby \(a\) i modułu \(n\), iloczyn  \(a\cdot x\) daje resztę 1 z dzielenia przez \(n\) czyli \(a\cdot x\equiv 1 \pmod n\). Odwrotność modularna istnieje wtedy i tylko wtedy, gdy największy wspólny dzielnik \(a\) i \(n\) wynosi 1 (NWD(a, n) = 1), czyli \(a\) i \(n\) są liczbami względnie pierwszymi. Odwrotność modularną najczęściej oblicza się za pomocą rozszerzonego algorytmu Euklidesa, który pozwala znależć taką liczbę że \(x\), że:
+        \[
+        a\cdot x+n\cdot y=1
+        \]
+        Ponieważ \(gcd(a,n) = 1\), równanie to ma rozwiązania, a współczynnik \(x\) jest właśnie szukaną odwrotnością modularną liczby \(a\) modulo n:
+        \[
+        a^{-1} \equiv x \pmod n 
+        \]
+        W praktyce odwrotność modularna jest niezbędna m.in. w algorytmie RSA, szczególnie podczas wyznaczania klucza prywatnego d, który spełnia równanie:
+        \[
+        d \equiv e^{-1}  (mod\varphi(n))
+        \]
+        Bez możliwości obliczenia odwrotności modularnej nie byłoby możliwe poprawne odszyfrowanie danych ani tworzenie podpisów cyfrowych. 
+
+        
+    \subsection{Potęgowanie szybkie}
+    
+    Szybkie potęgowanie, zwane też potęgowaniem binarnym lub przez podnoszenie do kwadratu, to algorytm do efektywnego obliczania  \(a^{b} \pmod n\), redukujący złożoność z \(O(b)\) do \(O(\log b)\) mnożeń, wykorzystując reprezentację binarną wykładnika. Zamiast liczyć \(a\cdot a\cdot a...\), algorytm kwadratowo podnosi podstawę \(a\) (tworząc \(a^{2},a^{4},a^{8},...\)) i mnoży wynik tylko przez te potęgi, których odpowiadające im bity wykładnika są jedynkami, wszystko w arytmetyce modularnej (z resztą z dzielenia).
+    Szyfrowanie w RSA:
+    \[
+    c=m^e \pmod n
+    \]
+    Odszyfrowanie w RSA:
+    \[
+    m=c^d \pmod n
+    \]
+    Eksponent \(e\) może mieć 2048 bitów, a \(d\) nawet 4096 bitów. Bez potęgowania szybkiego te operacje byłby praktycznie niewykonalne.
 
 
-\subsection{Odwracalność modularna (Odwrócenie modulo)}
+\section{Projekt i implementacja}
 
 
-\subsection{Potęgowanie szybkie}
+\section{Wyniki}
 
 
-\subsection{Trudność faktoryzacji}
+\section{Analiza bezpieczeństwa}
 
+
+\section{Wnioski}
 
 
 \end{document}
