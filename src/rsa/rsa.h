@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 
-/* mpz_class to odpowiednik z libgmp boostowego cpp_int
- * nazwa jest nieintuicyjna wiec uzywamy `big_int` */
-using big_int = mpz_class;
 
 namespace rsa {
-
+    /* mpz_class to odpowiednik z libgmp boostowego cpp_int
+     * nazwa jest nieintuicyjna wiec uzywamy `big_int` */
+    using big_int = mpz_class;
+    
     struct PubKey {
         big_int n; // Modul
         big_int e; // Wykladnik publiczny

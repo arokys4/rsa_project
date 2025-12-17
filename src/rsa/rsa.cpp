@@ -15,7 +15,7 @@ namespace rsa {
         }
         mr_rounds = (mr_rounds == 0) ? mr_rounds_default_ : mr_rounds;
 
-        // Generowanie dwoch rożnych liczb pierwszych p i q o długości około bits/2 kazda
+        // Generowanie dwoch roznych liczb pierwszych p i q o długości około bits/2 kazda
         unsigned int half = bits / 2;
         big_int p = generate_prime(half, mr_rounds);
         big_int q;
