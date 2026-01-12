@@ -9,13 +9,19 @@ namespace rsa {
 
     RSA::RSA() : mr_rounds_default_(25) {}
 
+    // Jeden generator na wątek, seedowany raz
+    static std::mt19937_64& global_rng(unsigned int seed) {
+        thread_local std::mt19937_64 gen(seed);
+        return gen;
+    }
+
     void RSA::generate_keys(unsigned int bits, unsigned int mr_rounds) {
         if (bits < 32) {
             throw std::runtime_error("Key size too small; use >= 32 bits for demo.");
         }
         mr_rounds = (mr_rounds == 0) ? mr_rounds_default_ : mr_rounds;
 
-        // Generowanie dwoch roznych liczb pierwszych p i q o długości około bits/2 kazda
+        // Generowanie dwóch różnych liczb pierwszych p i q o długości ~bits/2
         unsigned int half = bits / 2;
         big_int p = generate_prime(half, mr_rounds);
         big_int q;
@@ -26,7 +32,7 @@ namespace rsa {
         big_int n = p * q;
         big_int phi = (p - 1) * (q - 1);
 
-        // Publiczny wykladnik e (często 65537)
+        // Publiczny wykładnik e (standardowo 65537)
         big_int e = 65537;
         if (gcd(e, phi) != 1) {
             e = 3;
@@ -98,14 +104,18 @@ namespace rsa {
 
     unsigned int RSA::rng_seed_entropy() const {
         std::random_device rd;
-        unsigned int seed = static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count() ^ rd());
+        unsigned int seed =
+            static_cast<unsigned int>(
+                std::chrono::high_resolution_clock::now().time_since_epoch().count()
+            ) ^ static_cast<unsigned int>(rd());
         return seed;
     }
 
-    big_int RSA::random_k_bit(unsigned int k) const {
+    // Losowa liczba o MAKSYMALNIE k bitach (bez wymuszania najwyższego bitu i bez wymuszania nieparzystości)
+    big_int RSA::random_bits(unsigned int k) const {
         if (k == 0) return 0;
-        // Budowanie losowej liczby przez łączenie 64-bitowych fragmentów
-        std::mt19937_64 gen(rng_seed_entropy());
+
+        auto& gen = global_rng(rng_seed_entropy());
         std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
 
         unsigned int full_chunks = k / 64;
@@ -117,41 +127,57 @@ namespace rsa {
             r <<= 64;
             r += to_big_int(part);
         }
+
         if (rem_bits) {
             uint64_t part = dist(gen);
-        
             if (rem_bits < 64) {
-                uint64_t mask = (rem_bits == 64) ? ~uint64_t(0) : ((uint64_t(1) << rem_bits) - 1);
+                uint64_t mask = (uint64_t(1) << rem_bits) - 1;
                 part &= mask;
             }
             r <<= rem_bits;
-
             r += to_big_int(part);
         }
-        
-        r |= (big_int(1) << (k - 1));
-        r |= 1;
+
+        return r;
+    }
+
+    // Losowa liczba dokładnie k-bitowa, nieparzysta (dobry kandydat na liczbę pierwszą)
+    big_int RSA::random_k_bit(unsigned int k) const {
+        if (k == 0) return 0;
+
+        big_int r = random_bits(k);
+        r |= (big_int(1) << (k - 1)); // wymuś najwyższy bit -> dokładnie k bitów
+        r |= 1;                       // wymuś nieparzystość
         return r;
     }
 
     // Losowa liczba w zakresie [low, high] włącznie (zakłada low <= high)
     big_int RSA::random_between(const big_int& low, const big_int& high) const {
         if (low > high) throw std::runtime_error("random_between: low > high");
+        if (low == high) return low;
+
         big_int range = high - low + 1;
-        // Określenie liczby bitów potrzebnej do zakresu
+
+        // policz liczbę bitów potrzebną do reprezentacji (range - 1)
         unsigned int bits = 0;
         big_int tmp = range - 1;
         while (tmp > 0) { tmp >>= 1; ++bits; }
+
+        // jeżeli range==1, bits==0
+        if (bits == 0) return low;
+
         big_int candidate;
         do {
-            candidate = random_k_bit(bits);
+            candidate = random_bits(bits);  // <- kluczowa poprawka
         } while (candidate >= range);
+
         return low + candidate;
     }
 
-    // Miller-Rabin 
+    // Miller-Rabin
     bool RSA::is_probable_prime(const big_int& n, unsigned int rounds) const {
         if (n < 2) return false;
+
         static const int small_primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47};
         for (int p : small_primes) {
             if (n == p) return true;
@@ -166,21 +192,17 @@ namespace rsa {
             ++s;
         }
 
-        std::mt19937_64 gen(rng_seed_entropy());
-        std::uniform_int_distribution<uint64_t> dist64(2, std::numeric_limits<uint64_t>::max());
+        auto& gen = global_rng(rng_seed_entropy());
 
         for (unsigned int i = 0; i < rounds; ++i) {
             big_int a;
+
             if (n.fits_ulong_p()) {
                 unsigned long n_val = n.get_ui();
+                if (n_val <= 4) return (n_val == 2 || n_val == 3);
 
-                if (n_val > 3) {
-                    uint64_t aval = 2 + (dist64(gen) % (n_val - 3));
-                    a = to_big_int(aval);
-                } else {
-                    a = 2;
-                }
-
+                std::uniform_int_distribution<unsigned long> dist_a(2, n_val - 2);
+                a = to_big_int(dist_a(gen));
             } else {
                 a = random_between(2, n - 2);
             }
@@ -205,7 +227,6 @@ namespace rsa {
         if (bits < 2) throw std::runtime_error("generate_prime: bits must be >= 2");
         while (true) {
             big_int cand = random_k_bit(bits);
-            
             if (is_probable_prime(cand, mr_rounds)) return cand;
         }
     }
@@ -234,22 +255,23 @@ namespace rsa {
             ++max_bytes;
             limit *= 256;
         }
-        if (max_bytes == 0) max_bytes = 1;
         max_bytes = std::max<unsigned int>(1, max_bytes - 1);
 
         size_t i = 0;
         while (i < message.size()) {
             unsigned int take = std::min<size_t>(max_bytes, message.size() - i);
             big_int m = 0;
+
             for (unsigned int j = 0; j < take; ++j) {
                 unsigned char byte = static_cast<unsigned char>(message[i + j]);
                 m <<= 8;
                 m += byte;
             }
+
             if (m >= pub.n) {
-                // zmniejszenie rozmiaru bloku az m < n
+                // zmniejszenie rozmiaru bloku aż m < n
                 bool adjusted = false;
-                for (int dec = take - 1; dec >= 1; --dec) {
+                for (int dec = static_cast<int>(take) - 1; dec >= 1; --dec) {
                     big_int mm = 0;
                     for (int j = 0; j < dec; ++j) {
                         unsigned char byte = static_cast<unsigned char>(message[i + j]);
@@ -257,7 +279,7 @@ namespace rsa {
                         mm += byte;
                     }
                     if (mm < pub.n) {
-                        take = dec;
+                        take = static_cast<unsigned int>(dec);
                         m = mm;
                         adjusted = true;
                         break;
@@ -269,26 +291,35 @@ namespace rsa {
             blocks.push_back(encrypt_block(m, pub));
             i += take;
         }
+
         return blocks;
     }
 
     std::string RSA::decrypt_string(const std::vector<big_int>& cipher_blocks, const PrivKey& priv) const {
         std::string out;
+
         for (const big_int& c : cipher_blocks) {
             big_int m = decrypt_block(c, priv);
+
+            // rozpakuj big_int na bajty (base-256)
             std::vector<unsigned char> bytes;
             big_int temp = m;
+
             while (temp > 0) {
                 uint32_t byte = (temp.get_ui() & 0xFF);
                 bytes.push_back(static_cast<unsigned char>(byte));
                 temp >>= 8;
             }
-            if (bytes.empty()) {
-                out.push_back('\0');
-            } else {
-                for (auto it = bytes.rbegin(); it != bytes.rend(); ++it) out.push_back(static_cast<char>(*it));
+
+            // Wersja demonstracyjna: jeśli m==0, nie dopisujemy sztucznego '\0'
+            if (!bytes.empty()) {
+                for (auto it = bytes.rbegin(); it != bytes.rend(); ++it)
+                    out.push_back(static_cast<char>(*it));
             }
         }
+
         return out;
     }
+} // namespace rsa
+
 }
