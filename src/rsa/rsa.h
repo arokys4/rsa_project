@@ -47,6 +47,7 @@ namespace rsa {
         static big_int modinv(const big_int& a, const big_int& m);
         static big_int modexp(big_int base, big_int exp, const big_int& mod);
 
+        big_int random_bits(unsigned int k) const;
         big_int random_k_bit(unsigned int k) const;
         big_int random_between(const big_int& low, const big_int& high) const;
         big_int generate_prime(unsigned int bits, unsigned int mr_rounds = 25) const;
@@ -57,3 +58,4 @@ namespace rsa {
 }
 
 #endif
+
