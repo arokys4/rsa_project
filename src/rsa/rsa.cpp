@@ -1,4 +1,5 @@
 #include "rsa.h"
+#include <algorithm>
 #include <random>
 #include <chrono>
 #include <stdexcept>
@@ -321,5 +322,3 @@ namespace rsa {
         return out;
     }
 } // namespace rsa
-
-}
