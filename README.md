@@ -61,9 +61,12 @@ cmake --build target
 ### Run the Application:
 #### PS (or Windows Terminal)
 
+```sh
 ./target/rsa_app.exe
+```
 
 ## Usage (User Guide)
+```
 
 ### Generate RSA key pair
 ```sh
@@ -144,7 +147,9 @@ cmake --build target
 ### Uruchomienie aplikacji
 #### PowerShell lub Windows Terminal
 
+```sh
 ./target/rsa_app.exe
+```
 
 ## Instrukcja użytkownika
 
