@@ -65,19 +65,22 @@ cmake --build target
 
 ## Usage (User Guide)
 
-### Generating RSA Keys
+### Generate RSA key pair
 ```sh
-rsa_app.exe genkeys --bits 256 --pub public.key --priv private.key
+rsa_app.exe genkeys --bits 128
+```
+This command generates two files:
+-rsa_key.pub – public key
+-rsa_key – private key
+
+### Encrypt a message and save it to a file
+```sh
+rsa_app.exe encrypt --pub rsa_key.pub -m "HELLO" --out cipher.txt
 ```
 
-### Encrypting a Message
+### Decrypt the message from file
 ```sh
-rsa_app.exe encrypt --key public.key --message "HELLO WORLD"
-```
-
-### Decrypting a Message
-```sh
-rsa_app.exe decrypt --key private.key --cipher encrypted.txt
+rsa_app.exe decrypt --priv rsa_key cipher.txt
 ```
 
 # Projekt szyfrowania RSA
@@ -145,19 +148,22 @@ cmake --build target
 
 ## Instrukcja użytkownika
 
-### Generowanie kluczy RSA
+### Generowanie pary kluczy RSA
 ```sh
-rsa_app.exe genkeys --bits 256 --pub public.key --priv private.key
+rsa_app.exe genkeys --bits 128
 ```
+Polecenie generuje dwa pliki:
+-rsa_key.pub – klucz publiczny
+-rsa_key – klucz prywatny
 
-### Szyfrowanie wiadomości
+### Szyfrowanie wiadomości i zapis do pliku
 ```sh
 rsa_app.exe encrypt --key public.key --message "HELLO WORLD"
 ```
 
-### Deszyfrowanie wiadomości
+### # Deszyfrowanie wiadomości z pliku
 ```sh
-rsa_app.exe decrypt --key private.key --cipher encrypted.txt
+rsa_app.exe decrypt --priv rsa_key cipher.txt
 ```
 
 
