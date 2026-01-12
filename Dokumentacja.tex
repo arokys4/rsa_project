@@ -9,6 +9,7 @@
 \author{Jakub Sikora, Mikołaj Czermak}
 \date{}% - pusta data | %\date{\today} - data dzisiejsza
 
+
 \begin{document}
 
 \maketitle 
@@ -140,14 +141,64 @@
 
 \section{Projekt i implementacja}
 
+    Algorytmy generowania kluczy, szyfrowania i deszyfrowania zostały zaimplementowane zgodnie z klasycznym pseudokodem RSA, którego struktura odpowiada algorytmom opisanym w literaturze kryptograficznej. Projekt został zaimplementowany w języku C++, z wykorzystaniem biblioteki \textbf{GMP (GNU Multiple Precision Arithmetic Library)} do obsługi dużych liczb całkowitych, które są niezbędne w kryptografii RSA. Architektura programu została podzielona na kilka logicznych modułów, co zwiększa czytelność kodu oraz ułatwia jego rozwój i testowanie.
+    Główna cześć kryptograficzna została zawarta w klasie \texttt{RSA}, odpowiedzialnej za:
+    \begin{itemize}
+        \item generowanie par kluczy publiczny--prywatny
+        \item szyfrowanie i deszyfrowanie pojedynczych bloków danych,
+        \item szyfrowanie i deszyfrowanie ciągów znaków,
+        \item testowanie pierwszości liczb metodą Millera--Rabina.
+    \end{itemize}
 
+    Generowanie kluczy polega na losowym wyborze dwóch dużych loczb pierwszych \(p)\) i \(q\), obliczaniu modułu \(n = pq\)
+    
+    
 \section{Wyniki}
+
+    W celu weryfikacji poprawności implementacji przeprowadzono serię testów funkcjonalnych. Sprawdzono poprawność generowania kluczy, a także poprawność procesu szyfrowania i deszyfrowania wiadomości.
+    
+    Testy wykazały, że dla poprawnie wygenerowanej pary kluczy, odszyfrowanie wiadomości zaszyfrowanej kluczem publicznym zawsze zwraca oryginalny tekst wejściowy. Testy przeprowadzono dla różnych długości wiadomości, zawierających znaki alfanumeryczne oraz znaki specjalne.
+
+    Dodatkowo sprawdzono poprawność działania algorytmów matematycznych, takich jak:
+    \begin{itemize}
+        \item rozszerzony algorytm Eukldesa,
+        \item obliczanie odwrotności modularnej,
+        \item szybkie potęgowanie modularne.
+    \end{itemize}
+
+    Dla celów demonstracyjnych używano kluczy o mniejszej długości bitowej (np. 128 lub 256 bitów), co pozwoliło na szybkie generowanie kluczy i sprawną demonstrację działania systemu. Dla większych długości kluczy zauważalny był wzrost czasu generowania, co jest zgodne z oczekiwaniami teoretycznymi. 
+
+    Przykładowy test:
+    \begin{itemize}
+        \item Wiadomość jawna: \texttt{HELLO}
+        \item Zaszyfrowany blok: \texttt{[123456789012345]}
+        \item Odszyfrowana wiadomość: \texttt{HELLO}
+    \end{itemize}
 
 
 \section{Analiza bezpieczeństwa}
 
+    Bezpieczeństwo kryptosystemu RSA opiera się na trudności faktoryzacji dużych liczb będących iloczynem dwóch liczb pierwszych. Przy odpowiednio dużych rozmiarach kluczy (np. 2048 bitów i więcej) obecnie nie istnieją znane algorytmy, które umożliwiałyby złamanie RSA w rozsądnym czasie.
+    
+    Należy jednak podkreślić, że zaprezentowana implementacja ma charakter edukacyjny. Zastosowane kodowanie wiadomości jest uproszczone i nie wykorzystuje standardowych schematów wypełniania (paddingu), takich jak OAEP. Brak paddingu może w rzeczywistych systemach prowadzić do podatności na ataki kryptograficzne.
+    
+    Ponadto generator liczb losowych użyty w projekcie nie jest kryptograficznie bezpieczny, co również ogranicza zastosowanie systemu w realnych warunkach. W praktycznych implementacjach RSA stosuje się specjalizowane źródła losowości oraz dodatkowe zabezpieczenia.
+    
+    Mimo tych ograniczeń, projekt poprawnie demonstruje zasadę działania kryptografii asymetrycznej i spełnia założenia funkcjonalne algorytmu RSA.
+
 
 \section{Wnioski}
+
+    W ramach projektu udało się zaprojektować i zaimplementować kompletny system kryptograficzny oparty na algorytmie RSA. Projekt pozwolił na praktyczne zastosowanie wiedzy z zakresu teorii liczb, arytmetyki modularnej oraz algorytmów kryptograficznych.
+    
+    Implementacja umożliwia generowanie kluczy, szyfrowanie oraz deszyfrowanie wiadomości, a także prezentuje pełny proces bezpiecznej komunikacji w modelu kryptografii asymetrycznej. Praca nad projektem pozwoliła lepiej zrozumieć zarówno matematyczne podstawy RSA, jak i praktyczne aspekty implementacji kryptografii.
+    
+    W przyszłości projekt mógłby zostać rozszerzony o zastosowanie standardowych schematów paddingu, integrację szyfrowania symetrycznego (np. AES) oraz użycie kryptograficznie bezpiecznych generatorów liczb losowych, co pozwoliłoby zbliżyć implementację do standardów stosowanych w rzeczywistych systemach bezpieczeństwa.
+
+    
+\section{Instrukcja użytkownika}
+
+    Szczegółowa instrukcja obsługi programu, wraz z przykładami użycia interfejsu wiersza poleceń, została zamieszczona w pliku \texttt{README.md} w repozytorium projektu.
 
 
 \end{document}
