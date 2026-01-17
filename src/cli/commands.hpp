@@ -43,7 +43,7 @@ namespace cli {
             if (!content.empty() && content.back() != '\n') std::cout << "\n";
         } else {
             std::ofstream ofs(path, std::ios::binary);
-            if (!ofs) throw std::runtime_error("Błąd zapisu do pliku: " + path);
+            if (!ofs) throw std::runtime_error("Failed to save file: " + path);
 
             ofs << content;
             if (!content.empty() && content.back() != '\n') ofs << "\n";

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+class UnitTests; // fwd declaration
 
 namespace rsa {
     /* mpz_class to odpowiednik z libgmp boostowego cpp_int
@@ -38,6 +39,7 @@ namespace rsa {
 
         bool is_probable_prime(const big_int& n, unsigned int rounds = 25) const;
 
+        friend class ::UnitTests;
     private:
         PubKey pub_;   
         PrivKey priv_;
