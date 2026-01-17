@@ -71,10 +71,8 @@ To verify the correctness of the mathematical algorithms (GCD, Modular Inverse, 
 
 ```bash
 ./target/run_tests.exe
-
-## Usage (User Guide)
 ```
-
+## Usage (User Guide)
 ### Generate RSA key pair
 ```sh
 rsa_app.exe genkeys --bits 128

@@ -69,9 +69,9 @@ Aby zweryfikować poprawność algorytmów matematycznych (NWD, Odwrotność Mod
 
 ```bash
 ./target/run_tests.exe
+```
 
 ## Instrukcja użytkownika
-
 ### Generowanie pary kluczy RSA
 ```sh
 rsa_app.exe genkeys --bits 128
