@@ -44,7 +44,7 @@ This project uses MinGW and CMake. Ensure your MinGW bin folder (e.g., C:\msys64
 
     Open a terminal inside the src folder.
 
-###Generate Build Files: Tell CMake to use the "MinGW Makefiles" generator.
+### Generate Build Files: Tell CMake to use the "MinGW Makefiles" generator.
 #### PS (or Windows Terminal)
 
 ```sh
