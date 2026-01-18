@@ -27,15 +27,32 @@ The system is implemented in C++ and uses the GMP (GNU Multiple Precision Arithm
 ## Project Structure
 
 ```text
-RSA_Project/
+RSA++/
+├── README.md
+├── README_PL.md
+├── rsa_project_requirements.pdf
+├── dependencies/
+│   ├── include/
+│   │   ├── gmp.h
+│   │   ├── gmpxx.h
+│   │   └── lyra.hpp
+│   └── lib/
+│       ├── libgmp.a
+│       └── libgmpxx.a
+├── docs/
+│   └── Dokumentacja.tex
 ├── src/
-│   ├── main.cpp  
-│   ├── CMakeLists.txt    # CMake build configuration
-│   ├── rsa/
-│   │   ├── rsa.cpp/.h       # RSA implementation logic
-└── dependencies/             # Local GMP dependencies
-    ├── include/      # Headers (gmp.h, gmpxx.h)
-    └── lib/          # Static libs (libgmp/xx.a)
+│   ├── CMakeLists.txt
+│   ├── main.cpp
+│   ├── cli/
+│   │   ├── cli.hpp
+│   │   └── commands.hpp
+│   └── rsa/
+│       ├── rsa.cpp
+│       └── rsa.h
+└── tests/
+    ├── tests.cpp
+    └── tests.h
 ```
 
 ## Build Instructions (Windows)

@@ -25,15 +25,32 @@ System został zaimplementowany w języku C++ i wykorzystuje bibliotekę GMP (GN
 ## Struktura projektu
 
 ```text
-RSA_Project/
+RSA++/
+├── README.md
+├── README_PL.md
+├── rsa_project_requirements.pdf
+├── dependencies/
+│   ├── include/
+│   │   ├── gmp.h
+│   │   ├── gmpxx.h
+│   │   └── lyra.hpp
+│   └── lib/
+│       ├── libgmp.a
+│       └── libgmpxx.a
+├── docs/
+│   └── Dokumentacja.tex
 ├── src/
-│   ├── main.cpp  
-│   ├── CMakeLists.txt        # Konfiguracja budowania CMake
-│   ├── rsa/
-│   │   ├── rsa.cpp/.h        # Implementacja algorytmu RSA
-└── dependencies/             # Lokalne zależności GMP
-    ├── include/              # Pliki nagłówkowe (gmp.h, gmpxx.h)
-    └── lib/                  # Biblioteki statyczne (libgmp/xx.a)
+│   ├── CMakeLists.txt
+│   ├── main.cpp
+│   ├── cli/
+│   │   ├── cli.hpp
+│   │   └── commands.hpp
+│   └── rsa/
+│       ├── rsa.cpp
+│       └── rsa.h
+└── tests/
+    ├── tests.cpp
+    └── tests.h
 ```
 
 # Instrukcja budowania (Windows)
